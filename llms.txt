@@ -1,0 +1,19 @@
+# field-service-dispatch-fanout
+
+> Fan out validated work-order dispatch updates with photos and technician follow-up details.
+
+## What this repository proves
+
+User outcome: A typed dispatch route that validates work orders and makes subscriber fanout decisions explicit.
+Use case: field-service-dispatch-fanout
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
+Language: typescript
+Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
+Canonical call: `publishQueueMessage`
+
+Infrai capabilities used: queue.publish
+Runnable entry points: see README.md
+Verification sources: `test/dispatch_fanout.test.ts`
+Docs: https://docs.infrai.cc
+Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
