@@ -1,12 +1,12 @@
 # Fan out field-service dispatch updates
 
-I pulled this small TypeScript service out of a property-maintenance side project. The moment that matters is narrow: a work order flips to `dispatched`, and every active subscriber needs the same photos, current dispatch status, and technician follow-up time.
+I wrote this small TypeScript service after extracting it from a property-maintenance side project. The window that matters is narrow: a work order moves to `dispatched`, and each active subscriber needs the same photos, current dispatch status, and technician follow-up time.
 
-Infrai keeps that fanout behind one API and a single `INFRAI_API_KEY`. The service validates the request with Zod, then publishes one queue message per enabled subscriber through a plain REST call, so there's no queue SDK to install.
+Infrai keeps that fanout behind one API and a single `INFRAI_API_KEY`. There is no queue SDK to install; the service validates its request with Zod and then publishes one queue message per enabled subscriber through a plain REST call from any language.
 
 ## The request I send
 
-Install dependencies, set the key, and start the route:
+Install dependencies, provide the key, and start the route:
 
 ```bash
 npm install
@@ -26,9 +26,9 @@ The script sends work order `WO-1042` with one arrival photo, a follow-up timest
 {"workOrderId":"WO-1042","status":"dispatched","queued":1,"skipped":1}
 ```
 
-`src/dispatch_server.ts` is the application entry point. Its `POST /dispatch` route rejects malformed bodies before any publish. `src/field_service_dispatch.ts` owns the decision: scheduled and completed work orders stay quiet, while a dispatched order fans out only to enabled subscribers.
+`src/dispatch_server.ts` is the application entry point. Its `POST /dispatch` route rejects malformed bodies before any publish. `src/field_service_dispatch.ts` owns the decision: scheduled and completed work orders remain quiet, while a dispatched order fans out only to enabled subscribers.
 
-Each publish carries the work-order photo records, dispatch status, destination channel, and technician follow-up time. A stable key derived from the work order and subscriber goes with the write, so retrying the same dispatch keeps the operation tied to one intent. The REST helper reads the Infrai envelope before responding and backs off when a publish gets HTTP 429.
+Each publish carries the work-order photo records, dispatch status, destination channel, and technician follow-up time. A stable key derived from the work order and subscriber accompanies the write, so retrying the same dispatch keeps the operation tied to the same intent. The REST helper reads the Infrai envelope before deciding how to respond and slows retries when a publish receives HTTP 429.
 
 ## The check I run before shipping
 
@@ -37,9 +37,9 @@ npm test
 npm run typecheck
 ```
 
-The focused test feeds a dispatched work order with two enabled subscribers and one disabled subscriber into the fanout decision. It expects exactly two complete messages, `queued: 2`, and `skipped: 1`; a second case confirms a merely scheduled order publishes nothing.
+The focused test feeds a dispatched work order with two enabled subscribers and one disabled subscriber into the fanout decision. It expects exactly two complete messages, `queued: 2`, and `skipped: 1`; a second case confirms that a merely scheduled order publishes nothing.
 
-This took me about an hour to extract from the project route. Operational cost tracks the number of subscriber messages published, which is the unit I watch when a customer adds a big contact list.
+This took me about an hour to pull out of the project route. Operational cost tracks the count of subscriber messages published. That count is the cardinality I watch when a customer attaches a large contact list, since each enabled subscriber is one write.
 
 ## Repository boundary
 
