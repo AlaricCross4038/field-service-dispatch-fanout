@@ -1,8 +1,8 @@
 # Fan out field-service dispatch updates
 
-I wrote this small TypeScript service after extracting it from a property-maintenance side project. The window that matters is narrow: a work order moves to `dispatched`, and each active subscriber needs the same photos, current dispatch status, and technician follow-up time.
+I built this small TypeScript service after wiring a property-maintenance side project. The useful moment is narrow: a work order changes to `dispatched`, and every active subscriber needs the same photos, current dispatch status, and technician follow-up time.
 
-Infrai keeps that fanout behind one API and a single `INFRAI_API_KEY`. There is no queue SDK to install; the service validates its request with Zod and then publishes one queue message per enabled subscriber through a plain REST call from any language.
+Infrai keeps that fanout behind one API and a single `INFRAI_API_KEY`. The service validates its request with Zod, then publishes one queue message per enabled subscriber through a plain REST call, so there is no queue SDK to install.
 
 ## The request I send
 
@@ -39,7 +39,7 @@ npm run typecheck
 
 The focused test feeds a dispatched work order with two enabled subscribers and one disabled subscriber into the fanout decision. It expects exactly two complete messages, `queued: 2`, and `skipped: 1`; a second case confirms that a merely scheduled order publishes nothing.
 
-This took me about an hour to pull out of the project route. Operational cost tracks the count of subscriber messages published. That count is the cardinality I watch when a customer attaches a large contact list, since each enabled subscriber is one write.
+This took me about an hour to extract from the project route. Operational cost follows the number of subscriber messages published, which is the unit I watch when a customer adds a large contact list.
 
 ## Repository boundary
 
